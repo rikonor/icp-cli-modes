@@ -3,7 +3,10 @@ use candid::Principal;
 use clap::{Args, Parser, Subcommand};
 
 use crate::{
-    commands::{Context, Mode, Validate, ValidateError, args},
+    commands::{
+        Context, Mode,
+        args::{self, Validate, ValidateError},
+    },
     operations,
 };
 

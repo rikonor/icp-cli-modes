@@ -1,5 +1,7 @@
 use candid::Principal;
 
+use crate::commands::Mode;
+
 #[derive(Clone, Debug)]
 pub enum Canister {
     Name(String),
@@ -35,6 +37,16 @@ impl From<&str> for Network {
 // TODO? Alias arg for transfers
 // can maintain mapping of principal aliases
 // e.g to associate a principal with a person, or with a specific canister
+
+#[derive(Debug, thiserror::Error)]
+pub enum ValidateError {
+    #[error(transparent)]
+    Unexpected(#[from] anyhow::Error),
+}
+
+pub trait Validate {
+    fn validate(&self, mode: &Mode) -> Result<(), ValidateError>;
+}
 
 #[cfg(test)]
 mod tests {
