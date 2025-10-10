@@ -1,5 +1,6 @@
 use anyhow::{Error, anyhow};
 use clap::{Args, Parser, Subcommand};
+use ic_agent::Agent;
 
 use crate::{
     commands::{
@@ -80,7 +81,8 @@ pub async fn start(ctx: &Context, args: &StartArgs) -> Result<(), Error> {
         }
     };
 
-    operations::canister::start(cid).await?;
+    let agent = Agent::builder().build()?;
+    (ctx.ops.canister.start)(&agent).start(cid).await?;
 
     Ok(())
 }
@@ -142,7 +144,8 @@ pub async fn stop(ctx: &Context, args: &StopArgs) -> Result<(), Error> {
         }
     };
 
-    operations::canister::stop(cid).await?;
+    let agent = Agent::builder().build()?;
+    (ctx.ops.canister.stop)(&agent).stop(cid).await?;
 
     Ok(())
 }

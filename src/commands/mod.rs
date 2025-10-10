@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use clap::Subcommand;
 
+use crate::operations::Initializers;
+
 pub mod args;
 pub mod canister;
 pub mod token;
@@ -17,6 +19,7 @@ pub enum Command {
 
 pub struct Context {
     pub mode: Mode,
+    pub ops: Initializers,
 }
 
 pub enum Mode {

@@ -29,7 +29,18 @@ async fn main() -> Result<(), Error> {
         Err(LocateError::Unexpected(err)) => panic!("{err}"),
     };
 
-    let ctx = Context { mode };
+    let ops = operations::Initializers {
+        canister: operations::canister::Initializers {
+            start: Box::new(|agent| todo!()),
+            stop: Box::new(|agent| todo!()),
+        },
+
+        token: operations::token::Initializers {
+            transfer: Box::new(|agent| todo!()),
+        },
+    };
+
+    let ctx = Context { mode, ops };
 
     match cli.command {
         Command::Canister(cmd) => match cmd.command {

@@ -1,6 +1,7 @@
 use anyhow::{Error, anyhow};
 use candid::Principal;
 use clap::{Args, Parser, Subcommand};
+use ic_agent::Agent;
 
 use crate::{
     commands::{
@@ -59,7 +60,8 @@ pub async fn transfer(ctx: &Context, args: &TransferArgs) -> Result<(), Error> {
         }
     };
 
-    operations::token::transfer(from, to).await?;
+    let agent = Agent::builder().build()?;
+    (ctx.ops.token.transfer)(&agent).transfer(from, to).await?;
 
     Ok(())
 }
