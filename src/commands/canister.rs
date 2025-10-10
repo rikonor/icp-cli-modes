@@ -1,8 +1,8 @@
-use anyhow::{Error, bail};
+use anyhow::{Error, anyhow};
 use clap::{Args, Parser, Subcommand};
 
 use crate::{
-    commands::{BoolSliceExt, Context, Mode, args},
+    commands::{BoolSliceExt, Context, Mode, Validate, ValidateError, args},
     operations,
 };
 
@@ -31,33 +31,48 @@ pub struct StartArgs {
     environment: Option<String>,
 }
 
+impl Validate for StartArgs {
+    fn validate(&self, mode: &Mode) -> Result<(), ValidateError> {
+        match (&mode, self) {
+            (
+                Mode::Project(_),
+                StartArgs {
+                    network: Some(_),
+                    environment: Some(_),
+                    ..
+                },
+            ) => Err(anyhow!("not allowed to have both network and environment").into()),
+
+            (
+                Mode::Global,
+                StartArgs {
+                    environment: Some(_),
+                    ..
+                },
+            ) => Err(anyhow!("environments are not available in a global context").into()),
+
+            (
+                Mode::Global,
+                StartArgs {
+                    network: Some(args::Network::Name(_)),
+                    ..
+                },
+            ) => Err(anyhow!("please provide a network url").into()),
+
+            _ => Ok(()),
+        }
+    }
+}
+
 pub async fn start(ctx: &Context, args: &StartArgs) -> Result<(), Error> {
     let cid = match &ctx.mode {
         //
         Mode::Project(dir) => {
-            if ![
-                matches!(args.canister, args::Canister::Name(_)),
-                matches!(args.network, Some(args::Network::Name(_))),
-            ]
-            .all()
-            {
-                bail!("butt 1");
-            }
-
             todo!()
         }
 
         //
         Mode::Global => {
-            if ![
-                matches!(args.canister, args::Canister::Principal(_)),
-                matches!(args.network, Some(args::Network::Url(_))),
-            ]
-            .all()
-            {
-                bail!("butt 2");
-            }
-
             todo!()
         }
     };
@@ -78,33 +93,48 @@ pub struct StopArgs {
     environment: Option<String>,
 }
 
+impl Validate for StopArgs {
+    fn validate(&self, mode: &Mode) -> Result<(), ValidateError> {
+        match (&mode, self) {
+            (
+                Mode::Project(_),
+                StopArgs {
+                    network: Some(_),
+                    environment: Some(_),
+                    ..
+                },
+            ) => Err(anyhow!("not allowed to have both network and environment").into()),
+
+            (
+                Mode::Global,
+                StopArgs {
+                    environment: Some(_),
+                    ..
+                },
+            ) => Err(anyhow!("environments are not available in a global context").into()),
+
+            (
+                Mode::Global,
+                StopArgs {
+                    network: Some(args::Network::Name(_)),
+                    ..
+                },
+            ) => Err(anyhow!("please provide a network url").into()),
+
+            _ => Ok(()),
+        }
+    }
+}
+
 pub async fn stop(ctx: &Context, args: &StopArgs) -> Result<(), Error> {
     let cid = match &ctx.mode {
         //
         Mode::Project(dir) => {
-            if ![
-                matches!(args.canister, args::Canister::Name(_)),
-                matches!(args.network, Some(args::Network::Name(_))),
-            ]
-            .all()
-            {
-                bail!("butt 1");
-            }
-
             todo!()
         }
 
         //
         Mode::Global => {
-            if ![
-                matches!(args.canister, args::Canister::Principal(_)),
-                matches!(args.network, Some(args::Network::Url(_))),
-            ]
-            .all()
-            {
-                bail!("butt 2");
-            }
-
             todo!()
         }
     };
@@ -112,4 +142,9 @@ pub async fn stop(ctx: &Context, args: &StopArgs) -> Result<(), Error> {
     operations::canister::stop(cid).await?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    // TODO: tests for args validation
 }

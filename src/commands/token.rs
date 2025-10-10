@@ -1,9 +1,9 @@
-use anyhow::{Error, bail};
+use anyhow::{Error, anyhow};
 use candid::Principal;
 use clap::{Args, Parser, Subcommand};
 
 use crate::{
-    commands::{BoolSliceExt, Context, Mode, args},
+    commands::{Context, Mode, Validate, ValidateError, args},
     operations,
 };
 
@@ -27,23 +27,31 @@ pub struct TransferArgs {
     network: Option<args::Network>,
 }
 
+impl Validate for TransferArgs {
+    fn validate(&self, mode: &Mode) -> Result<(), ValidateError> {
+        match (&mode, self) {
+            (
+                Mode::Global,
+                TransferArgs {
+                    network: Some(args::Network::Name(_)),
+                    ..
+                },
+            ) => Err(anyhow!("please provide a network url").into()),
+
+            _ => Ok(()),
+        }
+    }
+}
+
 pub async fn transfer(ctx: &Context, args: &TransferArgs) -> Result<(), Error> {
     let (from, to) = match &ctx.mode {
         //
         Mode::Project(dir) => {
-            if ![matches!(args.network, Some(args::Network::Name(_)))].all() {
-                bail!("butt 1");
-            }
-
             todo!()
         }
 
         //
         Mode::Global => {
-            if ![matches!(args.network, Some(args::Network::Url(_)))].all() {
-                bail!("butt 2");
-            }
-
             todo!()
         }
     };

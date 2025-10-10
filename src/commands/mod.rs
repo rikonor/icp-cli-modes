@@ -24,6 +24,16 @@ pub enum Mode {
     Global,
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum ValidateError {
+    #[error(transparent)]
+    Unexpected(#[from] anyhow::Error),
+}
+
+trait Validate {
+    fn validate(&self, mode: &Mode) -> Result<(), ValidateError>;
+}
+
 pub trait BoolSliceExt {
     fn all(&self) -> bool;
 }
