@@ -1,9 +1,9 @@
-use anyhow::Error;
+use anyhow::{Error, bail};
 use candid::Principal;
 use clap::{Args, Parser, Subcommand};
 
 use crate::{
-    commands::{Context, Mode, args},
+    commands::{BoolSliceExt, Context, Mode, args},
     operations,
 };
 
@@ -30,10 +30,22 @@ pub struct TransferArgs {
 pub async fn transfer(ctx: &Context, args: &TransferArgs) -> Result<(), Error> {
     let (from, to) = match &ctx.mode {
         //
-        Mode::Project(dir) => todo!(),
+        Mode::Project(dir) => {
+            if ![matches!(args.network, Some(args::Network::Name(_)))].all() {
+                bail!("butt");
+            }
+
+            todo!()
+        }
 
         //
-        Mode::Global => todo!(),
+        Mode::Global => {
+            if ![matches!(args.network, Some(args::Network::Url(_)))].all() {
+                bail!("butt");
+            }
+
+            todo!()
+        }
     };
 
     operations::token::transfer(from, to).await?;

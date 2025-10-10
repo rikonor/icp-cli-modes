@@ -1,8 +1,8 @@
-use anyhow::Error;
+use anyhow::{Error, bail};
 use clap::{Args, Parser, Subcommand};
 
 use crate::{
-    commands::{Context, Mode, args},
+    commands::{BoolSliceExt, Context, Mode, args},
     operations,
 };
 
@@ -34,10 +34,32 @@ pub struct StartArgs {
 pub async fn start(ctx: &Context, args: &StartArgs) -> Result<(), Error> {
     let cid = match &ctx.mode {
         //
-        Mode::Project(dir) => todo!(),
+        Mode::Project(dir) => {
+            if ![
+                matches!(args.canister, args::Canister::Name(_)),
+                matches!(args.network, Some(args::Network::Name(_))),
+            ]
+            .all()
+            {
+                bail!("butt");
+            }
+
+            todo!()
+        }
 
         //
-        Mode::Global => todo!(),
+        Mode::Global => {
+            if ![
+                matches!(args.canister, args::Canister::Principal(_)),
+                matches!(args.network, Some(args::Network::Url(_))),
+            ]
+            .all()
+            {
+                bail!("butt");
+            }
+
+            todo!()
+        }
     };
 
     operations::canister::start(cid).await?;

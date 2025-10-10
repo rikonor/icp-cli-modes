@@ -23,3 +23,13 @@ pub enum Mode {
     Project(PathBuf),
     Global,
 }
+
+pub trait BoolSliceExt {
+    fn all(&self) -> bool;
+}
+
+impl BoolSliceExt for [bool] {
+    fn all(&self) -> bool {
+        !self.contains(&false)
+    }
+}

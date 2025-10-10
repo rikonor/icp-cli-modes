@@ -53,28 +53,3 @@ pub enum LocateError {
 fn locate() -> Result<PathBuf, LocateError> {
     Err(LocateError::NotFound)
 }
-
-// trait BoolSliceExt {
-//     fn all(&self) -> bool;
-// }
-
-// impl BoolSliceExt for [bool] {
-//     fn all(&self) -> bool {
-//         !self.contains(&false)
-//     }
-// }
-
-// impl From<&Cli> for Mode {
-//     fn from(v: &Cli) -> Self {
-//         if [
-//             matches!(v.canister, args::Canister::Name(_)),
-//             matches!(v.network, Some(args::Network::Name(_))),
-//         ]
-//         .all()
-//         {
-//             return Mode::Project;
-//         }
-
-//         Mode::Global
-//     }
-// }
