@@ -41,7 +41,7 @@ pub async fn start(ctx: &Context, args: &StartArgs) -> Result<(), Error> {
             ]
             .all()
             {
-                bail!("butt");
+                bail!("butt 1");
             }
 
             todo!()
@@ -55,7 +55,7 @@ pub async fn start(ctx: &Context, args: &StartArgs) -> Result<(), Error> {
             ]
             .all()
             {
-                bail!("butt");
+                bail!("butt 2");
             }
 
             todo!()
@@ -81,10 +81,32 @@ pub struct StopArgs {
 pub async fn stop(ctx: &Context, args: &StopArgs) -> Result<(), Error> {
     let cid = match &ctx.mode {
         //
-        Mode::Project(dir) => todo!(),
+        Mode::Project(dir) => {
+            if ![
+                matches!(args.canister, args::Canister::Name(_)),
+                matches!(args.network, Some(args::Network::Name(_))),
+            ]
+            .all()
+            {
+                bail!("butt 1");
+            }
+
+            todo!()
+        }
 
         //
-        Mode::Global => todo!(),
+        Mode::Global => {
+            if ![
+                matches!(args.canister, args::Canister::Principal(_)),
+                matches!(args.network, Some(args::Network::Url(_))),
+            ]
+            .all()
+            {
+                bail!("butt 2");
+            }
+
+            todo!()
+        }
     };
 
     operations::canister::stop(cid).await?;

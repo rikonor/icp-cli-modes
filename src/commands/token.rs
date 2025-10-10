@@ -32,7 +32,7 @@ pub async fn transfer(ctx: &Context, args: &TransferArgs) -> Result<(), Error> {
         //
         Mode::Project(dir) => {
             if ![matches!(args.network, Some(args::Network::Name(_)))].all() {
-                bail!("butt");
+                bail!("butt 1");
             }
 
             todo!()
@@ -41,7 +41,7 @@ pub async fn transfer(ctx: &Context, args: &TransferArgs) -> Result<(), Error> {
         //
         Mode::Global => {
             if ![matches!(args.network, Some(args::Network::Url(_)))].all() {
-                bail!("butt");
+                bail!("butt 2");
             }
 
             todo!()
