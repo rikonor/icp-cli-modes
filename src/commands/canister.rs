@@ -1,7 +1,10 @@
 use anyhow::Error;
 use clap::{Args, Parser, Subcommand};
 
-use crate::commands::{Context, args};
+use crate::{
+    commands::{Context, Mode, args},
+    operations,
+};
 
 #[derive(Parser)]
 pub struct Command {
@@ -29,6 +32,16 @@ pub struct StartArgs {
 }
 
 pub async fn start(ctx: &Context, args: &StartArgs) -> Result<(), Error> {
+    let cid = match &ctx.mode {
+        //
+        Mode::Project(dir) => todo!(),
+
+        //
+        Mode::Global => todo!(),
+    };
+
+    operations::canister::start(cid).await?;
+
     Ok(())
 }
 
@@ -44,5 +57,15 @@ pub struct StopArgs {
 }
 
 pub async fn stop(ctx: &Context, args: &StopArgs) -> Result<(), Error> {
+    let cid = match &ctx.mode {
+        //
+        Mode::Project(dir) => todo!(),
+
+        //
+        Mode::Global => todo!(),
+    };
+
+    operations::canister::stop(cid).await?;
+
     Ok(())
 }

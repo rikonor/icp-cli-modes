@@ -6,6 +6,7 @@ use clap::Parser;
 use crate::commands::{Command, Context, Mode, canister, token};
 
 mod commands;
+mod operations;
 
 #[derive(Parser)]
 struct Cli {
