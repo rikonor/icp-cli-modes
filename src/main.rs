@@ -3,7 +3,13 @@ use std::path::PathBuf;
 use anyhow::Error;
 use clap::Parser;
 
-use crate::commands::{Command, Context, Mode, canister, token};
+use crate::{
+    commands::{Command, Context, Mode, canister, token},
+    operations::{
+        canister::{Starter, Stopper},
+        token::Transmitter,
+    },
+};
 
 mod commands;
 mod operations;
@@ -31,12 +37,12 @@ async fn main() -> Result<(), Error> {
 
     let ops = operations::Initializers {
         canister: operations::canister::Initializers {
-            start: Box::new(|agent| todo!()),
-            stop: Box::new(|agent| todo!()),
+            start: Box::new(Starter::arc),
+            stop: Box::new(Stopper::arc),
         },
 
         token: operations::token::Initializers {
-            transfer: Box::new(|agent| todo!()),
+            transfer: Box::new(Transmitter::arc),
         },
     };
 

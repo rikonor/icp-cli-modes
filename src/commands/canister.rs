@@ -2,12 +2,9 @@ use anyhow::{Error, anyhow};
 use clap::{Args, Parser, Subcommand};
 use ic_agent::Agent;
 
-use crate::{
-    commands::{
-        Context, Mode,
-        args::{self, Validate, ValidateError},
-    },
-    operations,
+use crate::commands::{
+    Context, Mode,
+    args::{self, Validate, ValidateError},
 };
 
 #[derive(Parser)]
