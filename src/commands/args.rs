@@ -48,7 +48,17 @@ pub trait Validate {
     fn validate(&self, mode: &Mode) -> Result<(), ValidateError>;
 }
 
-#[cfg(test)]
-mod tests {
-    // TODO: tests for the arg parsing
-}
+// #[cfg(test)]
+// mod tests {
+//     use anyhow::Error;
+
+//     use crate::commands::args::Canister;
+
+//     #[test]
+//     fn canister_by_name() {
+//         assert_eq!(
+//             "my-canister".into(),
+//             Canister::Name("my-canister".to_string())
+//         );
+//     }
+// }

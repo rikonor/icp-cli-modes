@@ -4,12 +4,23 @@ use anyhow::Error;
 use async_trait::async_trait;
 use candid::Principal;
 use ic_agent::Agent;
+use mockall::automock;
 
 pub struct Initializers {
     pub start: Box<dyn Fn(&Agent) -> Arc<dyn Start>>,
     pub stop: Box<dyn Fn(&Agent) -> Arc<dyn Stop>>,
 }
 
+impl Default for Initializers {
+    fn default() -> Self {
+        Self {
+            start: Box::new(|_| unimplemented!()),
+            stop: Box::new(|_| unimplemented!()),
+        }
+    }
+}
+
+#[automock]
 #[async_trait]
 pub trait Start: Sync + Send {
     async fn start(&self, cid: &Principal) -> Result<(), Error>;
@@ -30,6 +41,7 @@ impl Start for Starter {
     }
 }
 
+#[automock]
 #[async_trait]
 pub trait Stop: Sync + Send {
     async fn stop(&self, cid: &Principal) -> Result<(), Error>;

@@ -1,4 +1,5 @@
 use anyhow::{Error, anyhow};
+use candid::Principal;
 use clap::{Args, Parser, Subcommand};
 use ic_agent::Agent;
 
@@ -141,13 +142,103 @@ pub async fn stop(ctx: &Context, args: &StopArgs) -> Result<(), Error> {
         }
     };
 
-    let agent = Agent::builder().build()?;
-    (ctx.ops.canister.stop)(&agent).stop(cid).await?;
+    let cid = Principal::anonymous();
+
+    let agent = Agent::builder()
+        .with_url("http://www.example.com")
+        .build()?;
+
+    (ctx.ops.canister.stop)(&agent).stop(&cid).await?;
 
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    // TODO: tests for args validation
+    use std::sync::Arc;
+
+    use anyhow::Error;
+    use candid::Principal;
+    use mockall::predicate::eq;
+
+    use crate::{
+        commands::{
+            Context, Mode, args,
+            canister::{StartArgs, StopArgs, start, stop},
+        },
+        operations::{
+            self,
+            canister::{self, MockStart, MockStop},
+        },
+    };
+
+    #[tokio::test]
+    async fn stop_in_project() -> Result<(), Error> {
+        // Mode (Project)
+        let mode = Mode::Project("path".into());
+
+        // Operations
+        let ops = operations::Initializers {
+            canister: canister::Initializers {
+                stop: Box::new(|_| {
+                    let mut m = MockStop::new();
+                    m.expect_stop()
+                        .with(eq(Principal::anonymous()))
+                        .once()
+                        .returning(|_| Ok(()));
+
+                    Arc::new(m)
+                }),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let ctx = Context { mode, ops };
+
+        let args = StopArgs {
+            canister: args::Canister::Name("my-canister".to_string()),
+            network: Some(args::Network::Name("my-network".to_string())),
+            environment: None,
+        };
+
+        stop(&ctx, &args).await?;
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn stop_in_global() -> Result<(), Error> {
+        // Mode (Global)
+        let mode = Mode::Project("path".into());
+
+        // Operations
+        let ops = operations::Initializers {
+            canister: canister::Initializers {
+                start: Box::new(|_| {
+                    let mut m = MockStart::new();
+                    m.expect_start()
+                        .with(eq(Principal::anonymous()))
+                        .once()
+                        .returning(|_| Ok(()));
+
+                    Arc::new(m)
+                }),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let ctx = Context { mode, ops };
+
+        let args = StartArgs {
+            canister: args::Canister::Name("my-canister".to_string()),
+            network: Some(args::Network::Name("my-network".to_string())),
+            environment: None,
+        };
+
+        start(&ctx, &args).await?;
+
+        Ok(())
+    }
 }

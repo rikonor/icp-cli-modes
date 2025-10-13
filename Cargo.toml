@@ -10,4 +10,5 @@ candid = "0.10.19"
 clap = { version = "4.5.42", features = ["derive"] }
 ic-agent = "0.44.2"
 thiserror = "2.0.17"
+mockall = "0.13.1"
 tokio = { version = "1.20", features = ["full"] }
