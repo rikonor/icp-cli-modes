@@ -28,6 +28,14 @@ impl Validate for TransferArgs {
                 },
             ) => Err(anyhow!("please provide a network url").into()),
 
+            (
+                Mode::Project(_),
+                TransferArgs {
+                    network: Some(args::Network::Url(_)),
+                    ..
+                },
+            ) => Err(anyhow!("please provide a network name").into()),
+
             _ => Ok(()),
         }
     }
@@ -63,7 +71,7 @@ mod tests {
     };
 
     #[test]
-    fn args_valid_global() {
+    fn args_valid() {
         let args = [
             TransferArgs {
                 from: Principal::anonymous(),
@@ -78,7 +86,12 @@ mod tests {
         ];
 
         for v in args {
+            // Mode (Global)
             (v).validate(&Mode::Global).expect("expected valid args");
+
+            // Mode (Project)
+            (v).validate(&Mode::Project("dir".into()))
+                .expect("expected valid args");
         }
     }
 
@@ -95,6 +108,25 @@ mod tests {
 
         for (v, msg) in args {
             match (v).validate(&Mode::Global) {
+                Ok(_) => panic!("expected invalid args"),
+                Err(err) => assert_eq!(err.to_string(), msg),
+            };
+        }
+    }
+
+    #[test]
+    fn args_invalid_project() {
+        let args = [(
+            TransferArgs {
+                from: Principal::anonymous(),
+                to: Principal::anonymous(),
+                network: Some(Network::Url("http://www.example.com".to_string())),
+            },
+            "please provide a network name",
+        )];
+
+        for (v, msg) in args {
+            match (v).validate(&Mode::Project("project-dir".into())) {
                 Ok(_) => panic!("expected invalid args"),
                 Err(err) => assert_eq!(err.to_string(), msg),
             };
