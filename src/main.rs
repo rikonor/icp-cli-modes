@@ -50,12 +50,12 @@ async fn main() -> Result<(), Error> {
 
     match cli.command {
         Command::Canister(cmd) => match cmd.command {
-            canister::Commands::Start(args) => canister::start(&ctx, &args).await?,
-            canister::Commands::Stop(args) => canister::stop(&ctx, &args).await?,
+            canister::Commands::Start(args) => canister::start::start(&ctx, &args).await?,
+            canister::Commands::Stop(args) => canister::stop::stop(&ctx, &args).await?,
         },
 
         Command::Token(cmd) => match cmd.command {
-            token::Commands::Transfer(args) => token::transfer(&ctx, &args).await?,
+            token::Commands::Transfer(args) => token::transfer::transfer(&ctx, &args).await?,
         },
     }
 

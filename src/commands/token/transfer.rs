@@ -1,26 +1,12 @@
 use anyhow::{Error, anyhow};
 use candid::Principal;
-use clap::{Args, Parser, Subcommand};
+use clap::Args;
 use ic_agent::Agent;
 
-use crate::{
-    commands::{
-        Context, Mode,
-        args::{self, Validate, ValidateError},
-    },
-    operations,
+use crate::commands::{
+    Context, Mode,
+    args::{self, Validate, ValidateError},
 };
-
-#[derive(Parser)]
-pub struct Command {
-    #[command(subcommand)]
-    pub command: Commands,
-}
-
-#[derive(Subcommand)]
-pub enum Commands {
-    Transfer(TransferArgs),
-}
 
 #[derive(Args)]
 pub struct TransferArgs {
