@@ -22,6 +22,7 @@ pub struct Context {
     pub ops: Initializers,
 }
 
+#[derive(Debug, PartialEq)]
 pub enum Mode {
     Project(PathBuf),
     Global,
