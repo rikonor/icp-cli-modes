@@ -1,6 +1,6 @@
-use anyhow::{Error, anyhow};
+use anyhow::Error;
 use candid::Principal;
-use clap::{Args, builder::TypedValueParser};
+use clap::Args;
 use ic_agent::Agent;
 use indoc::formatdoc;
 
@@ -90,20 +90,15 @@ fn a_network_name_is_required_in_project_mode<'a>(
 
 impl Validate for StartArgs {
     fn validate(&self, mode: &Mode) -> Result<(), ValidateError> {
-        let errs = [
+        for test in [
             a_network_name_is_required_in_project_mode,
             a_network_url_is_required_in_global_mode,
             environments_are_not_available_in_a_global_mode,
             network_or_environment_not_both,
-        ]
-        .map(|test| {
+        ] {
             test(self, mode)
-                .map_or(Ok(()), Err)
-                .map_err(|msg| anyhow!(msg))
-        });
-
-        for err in errs {
-            err?;
+                .map(|msg| anyhow::format_err!(msg))
+                .map_or(Ok(()), Err)?;
         }
 
         Ok(())
