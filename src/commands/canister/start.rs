@@ -90,11 +90,26 @@ fn a_network_name_is_required_in_project_mode<'a>(
 
 impl Validate for StartArgs {
     fn validate(&self, mode: &Mode) -> Result<(), ValidateError> {
+        // General Tests
         for test in [
             a_network_name_is_required_in_project_mode,
             a_network_url_is_required_in_global_mode,
             environments_are_not_available_in_a_global_mode,
             network_or_environment_not_both,
+        ] {
+            test(self, mode)
+                .map(|msg| anyhow::format_err!(msg))
+                .map_or(Ok(()), Err)?;
+        }
+
+        // Custom Tests
+        for test in [
+            //
+            // first custom check
+            |_args, _m| Some("butts".to_string()),
+            //
+            // second custom check
+            |_args, _m| Some("butts".to_string()),
         ] {
             test(self, mode)
                 .map(|msg| anyhow::format_err!(msg))
