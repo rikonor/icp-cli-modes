@@ -2,7 +2,7 @@ use candid::Principal;
 
 use crate::commands::Mode;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Canister {
     Name(String),
     Principal(Principal),
@@ -18,7 +18,7 @@ impl From<&str> for Canister {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Network {
     Name(String),
     Url(String),
@@ -48,17 +48,45 @@ pub trait Validate {
     fn validate(&self, mode: &Mode) -> Result<(), ValidateError>;
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use anyhow::Error;
+#[cfg(test)]
+mod tests {
+    use candid::Principal;
 
-//     use crate::commands::args::Canister;
+    use crate::commands::args::{Canister, Network};
 
-//     #[test]
-//     fn canister_by_name() {
-//         assert_eq!(
-//             "my-canister".into(),
-//             Canister::Name("my-canister".to_string())
-//         );
-//     }
-// }
+    #[test]
+    fn canister_by_name() {
+        assert_eq!(
+            Canister::from("my-canister"),
+            Canister::Name("my-canister".to_string()),
+        );
+    }
+
+    #[test]
+    fn canister_by_principal() {
+        let cid = "ntyui-iatoh-pfi3f-27wnk-vgdqt-mq3cl-ld7jh-743kl-sde6i-tbm7g-tqe";
+
+        assert_eq!(
+            Canister::from(cid),
+            Canister::Principal(Principal::from_text(cid).expect("failed to parse principal")),
+        );
+    }
+
+    #[test]
+    fn network_by_name() {
+        assert_eq!(
+            Network::from("my-network"),
+            Network::Name("my-network".to_string()),
+        );
+    }
+
+    #[test]
+    fn network_by_url_http() {
+        let url = "http://www.example.com";
+
+        assert_eq!(
+            Network::from(url),
+            Network::Url("http://www.example.com".to_string()),
+        );
+    }
+}

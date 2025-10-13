@@ -51,3 +51,53 @@ pub async fn transfer(ctx: &Context, args: &TransferArgs) -> Result<(), Error> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use candid::Principal;
+
+    use crate::commands::{
+        Mode,
+        args::{Network, Validate},
+        token::transfer::TransferArgs,
+    };
+
+    #[test]
+    fn args_valid_global() {
+        let args = [
+            TransferArgs {
+                from: Principal::anonymous(),
+                to: Principal::anonymous(),
+                network: None,
+            },
+            TransferArgs {
+                from: Principal::anonymous(),
+                to: Principal::anonymous(),
+                network: Some(Network::Url("http://www.example.com".to_string())),
+            },
+        ];
+
+        for v in args {
+            (v).validate(&Mode::Global).expect("expected valid args");
+        }
+    }
+
+    #[test]
+    fn args_invalid_global() {
+        let args = [(
+            TransferArgs {
+                from: Principal::anonymous(),
+                to: Principal::anonymous(),
+                network: Some(Network::Name("my-network".to_string())),
+            },
+            "please provide a network url",
+        )];
+
+        for (v, msg) in args {
+            match (v).validate(&Mode::Global) {
+                Ok(_) => panic!("expected invalid args"),
+                Err(err) => assert_eq!(err.to_string(), msg),
+            };
+        }
+    }
+}
