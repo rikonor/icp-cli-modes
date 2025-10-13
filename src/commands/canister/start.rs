@@ -1,6 +1,6 @@
 use anyhow::{Error, anyhow};
 use candid::Principal;
-use clap::Args;
+use clap::{Args, builder::TypedValueParser};
 use ic_agent::Agent;
 
 use crate::commands::{
@@ -83,7 +83,9 @@ impl Validate for StartArgs {
             a_network_url_is_required_in_global_mode,
             a_network_name_is_required_in_project_mode,
         ] {
-            test(self, mode).map_or(Ok(()), |msg| Err(anyhow!(msg)))?;
+            test(self, mode)
+                .map_or(Ok(()), Err)
+                .map_err(|msg| anyhow!(msg))?;
         }
 
         Ok(())
