@@ -2,6 +2,7 @@ use anyhow::{Error, anyhow};
 use candid::Principal;
 use clap::{Args, builder::TypedValueParser};
 use ic_agent::Agent;
+use indoc::formatdoc;
 
 use crate::commands::{
     Context, Mode,
@@ -39,22 +40,26 @@ impl<'a> From<&'a StartArgs> for (&'a Option<String>,) {
     }
 }
 
-fn not_allowed_to_have_both_network_and_environment<'a>(
+fn network_or_environment_not_both<'a>(
     network_environment: impl Into<(&'a Option<Network>, &'a Option<String>)>,
-    _: &Mode,
+    m: &Mode,
 ) -> Option<String> {
     let (network, environment) = network_environment.into();
-    (network.is_some() && environment.is_some())
-        .then_some("not allowed to have both network and environment".into())
+
+    (matches!(m, _) && network.is_some() && environment.is_some()).then_some(formatdoc! {"
+        Please provide either a network or an environment, but not both.
+    "})
 }
 
-fn environments_are_not_available_in_a_global_context<'a>(
+fn environments_are_not_available_in_a_global_mode<'a>(
     environment: impl Into<(&'a Option<String>,)>,
     m: &Mode,
 ) -> Option<String> {
     let (environment,) = environment.into();
-    ((m == &Mode::Global) && environment.is_some())
-        .then_some("environments are not available in a global context".into())
+
+    (matches!(m, Mode::Global) && environment.is_some()).then_some(formatdoc! {"
+        Environments are not available in global mode.
+    "})
 }
 
 fn a_network_url_is_required_in_global_mode<'a>(
@@ -62,8 +67,12 @@ fn a_network_url_is_required_in_global_mode<'a>(
     m: &Mode,
 ) -> Option<String> {
     let (network,) = network.into();
-    ((m == &Mode::Global) && !matches!(network, Some(Network::Url(_))))
-        .then_some("a network url is required in global mode".into())
+
+    (matches!(m, Mode::Global) && !matches!(network, Some(Network::Url(_)))).then_some(
+        formatdoc! {"
+            A network `url` is required in global mode.
+        "},
+    )
 }
 
 fn a_network_name_is_required_in_project_mode<'a>(
@@ -71,21 +80,30 @@ fn a_network_name_is_required_in_project_mode<'a>(
     m: &Mode,
 ) -> Option<String> {
     let (network,) = network.into();
-    (matches!(m, Mode::Project(_)) && !matches!(network, Some(Network::Name(_))))
-        .then_some("a network name is required in project mode".into())
+
+    (matches!(m, Mode::Project(_)) && !matches!(network, Some(Network::Name(_)))).then_some(
+        formatdoc! {"
+            A network `name` is required in project mode.
+        "},
+    )
 }
 
 impl Validate for StartArgs {
     fn validate(&self, mode: &Mode) -> Result<(), ValidateError> {
-        for test in [
-            not_allowed_to_have_both_network_and_environment,
-            environments_are_not_available_in_a_global_context,
-            a_network_url_is_required_in_global_mode,
+        let errs = [
             a_network_name_is_required_in_project_mode,
-        ] {
+            a_network_url_is_required_in_global_mode,
+            environments_are_not_available_in_a_global_mode,
+            network_or_environment_not_both,
+        ]
+        .map(|test| {
             test(self, mode)
                 .map_or(Ok(()), Err)
-                .map_err(|msg| anyhow!(msg))?;
+                .map_err(|msg| anyhow!(msg))
+        });
+
+        for err in errs {
+            err?;
         }
 
         Ok(())
