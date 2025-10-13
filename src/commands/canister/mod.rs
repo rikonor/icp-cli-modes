@@ -1,9 +1,10 @@
 use clap::{Parser, Subcommand};
 
-use crate::commands::canister::{start::StartArgs, stop::StopArgs};
+mod start;
+pub use start::*;
 
-pub mod start;
-pub mod stop;
+mod stop;
+pub use stop::*;
 
 #[derive(Parser)]
 pub struct Command {

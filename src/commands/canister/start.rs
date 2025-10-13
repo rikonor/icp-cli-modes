@@ -89,7 +89,7 @@ mod tests {
     use crate::{
         commands::{
             Context, Mode, args,
-            canister::{StartArgs, start::start},
+            canister::{StartArgs, start},
         },
         operations::{
             self,

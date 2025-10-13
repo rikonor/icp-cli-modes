@@ -87,7 +87,7 @@ mod tests {
     use crate::{
         commands::{
             Context, Mode, args,
-            canister::{StopArgs, stop::stop},
+            canister::{StopArgs, stop},
         },
         operations::{
             self,
