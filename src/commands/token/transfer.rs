@@ -76,75 +76,44 @@ pub async fn transfer(ctx: &Context, args: &TransferArgs) -> Result<(), Error> {
 }
 
 #[cfg(test)]
-mod tests {
+mod test_args {
     use candid::Principal;
 
     use crate::commands::{
-        Mode,
-        args::{Network, Validate},
-        token::transfer::TransferArgs,
+        args::{Validate, validations::helpers::IntoOptions},
+        token::transfer::{TransferArgs, validations},
     };
 
     #[test]
-    fn args_valid() {
-        let args = [
-            TransferArgs {
-                from: Principal::anonymous(),
-                to: Principal::anonymous(),
-                network: None,
-            },
-            TransferArgs {
-                from: Principal::anonymous(),
-                to: Principal::anonymous(),
-                network: Some(Network::Url("http://www.example.com".to_string())),
-            },
-        ];
-
-        for v in args {
-            // Mode (Global)
-            (v).validate(&Mode::Global).expect("expected valid args");
-
-            // Mode (Project)
-            (v).validate(&Mode::Project("dir".into()))
-                .expect("expected valid args");
-        }
-    }
-
-    #[test]
-    fn args_invalid_global() {
-        let args = [(
-            TransferArgs {
-                from: Principal::anonymous(),
-                to: Principal::anonymous(),
-                network: Some(Network::Name("my-network".to_string())),
-            },
-            "please provide a network url",
+    fn args_from_and_to_cannot_be_the_same() {
+        let tests = [(
+            //
+            // Args
+            validations::helpers::all_networks()
+                .into_options()
+                .into_iter()
+                .map(|network| TransferArgs {
+                    from: Principal::anonymous(),
+                    to: Principal::anonymous(),
+                    network,
+                }),
+            //
+            // Modes
+            validations::helpers::all_modes(),
+            //
+            // Message
+            "`from` and `to` cannot be the same IDs",
         )];
 
-        for (v, msg) in args {
-            match (v).validate(&Mode::Global) {
-                Ok(_) => panic!("expected invalid args"),
-                Err(err) => assert_eq!(err.to_string(), msg),
-            };
-        }
-    }
-
-    #[test]
-    fn args_invalid_project() {
-        let args = [(
-            TransferArgs {
-                from: Principal::anonymous(),
-                to: Principal::anonymous(),
-                network: Some(Network::Url("http://www.example.com".to_string())),
-            },
-            "please provide a network name",
-        )];
-
-        for (v, msg) in args {
-            match (v).validate(&Mode::Project("project-dir".into())) {
-                Ok(_) => panic!("expected invalid args"),
-                Err(err) => assert_eq!(err.to_string(), msg),
-            };
+        for (args, modes, msg) in tests {
+            for v in args {
+                for mode in &modes {
+                    match (v).validate(mode) {
+                        Ok(_) => panic!("expected invalid args"),
+                        Err(err) => assert_eq!(err.to_string(), msg),
+                    };
+                }
+            }
         }
     }
 }
