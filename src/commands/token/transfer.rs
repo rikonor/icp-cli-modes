@@ -3,41 +3,56 @@ use candid::Principal;
 use clap::Args;
 use ic_agent::Agent;
 
-use crate::commands::{
-    Context, Mode,
-    args::{self, Validate, ValidateError},
+use crate::{
+    commands::{
+        Context, Mode,
+        args::{self, Validate, ValidateError, validations},
+    },
+    impl_from_args,
 };
 
 #[derive(Args)]
 pub struct TransferArgs {
-    from: Principal,
-    to: Principal,
+    pub from: Principal,
+    pub to: Principal,
 
     #[arg(long)]
-    network: Option<args::Network>,
+    pub network: Option<args::Network>,
 }
+
+impl_from_args!(TransferArgs, from: Principal, to: Principal);
+impl_from_args!(TransferArgs, network: Option<args::Network>);
 
 impl Validate for TransferArgs {
     fn validate(&self, mode: &Mode) -> Result<(), ValidateError> {
-        match (&mode, self) {
-            (
-                Mode::Global,
-                TransferArgs {
-                    network: Some(args::Network::Name(_)),
-                    ..
-                },
-            ) => Err(anyhow!("please provide a network url").into()),
-
-            (
-                Mode::Project(_),
-                TransferArgs {
-                    network: Some(args::Network::Url(_)),
-                    ..
-                },
-            ) => Err(anyhow!("please provide a network name").into()),
-
-            _ => Ok(()),
+        // Custom Tests
+        for test in [
+            //
+            // `from` and `to` are the same
+            |args, _| {
+                let &TransferArgs { from, to, .. } = args;
+                (from == to).then_some("`from` and `to` cannot be the same IDs".to_string())
+            },
+            //
+            // dummy case to shush linter
+            |_, _| None,
+        ] {
+            test(self, mode)
+                .map(|msg| anyhow::format_err!(msg))
+                .map_or(Ok(()), Err)?;
         }
+
+        // General Tests
+        for test in [
+            validations::a_network_name_is_required_in_project_mode,
+            validations::a_network_url_is_required_in_global_mode,
+        ] {
+            test(self, mode)
+                .map(|msg| anyhow::format_err!(msg))
+                .map_or(Ok(()), Err)?;
+        }
+
+        Ok(())
     }
 }
 

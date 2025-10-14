@@ -1,54 +1,62 @@
-use anyhow::{Error, anyhow};
+use anyhow::Error;
 use candid::Principal;
 use clap::Args;
 use ic_agent::Agent;
 
-use crate::commands::{
-    Context, Mode,
-    args::{self, Validate, ValidateError},
+use crate::{
+    commands::{
+        Context, Mode,
+        args::{self, Validate, ValidateError, validations},
+    },
+    impl_from_args,
 };
 
 #[derive(Args)]
 pub struct StopArgs {
-    canister: args::Canister,
+    pub canister: args::Canister,
 
     // Network
-    network: Option<args::Network>,
+    pub network: Option<args::Network>,
 
     // Environment
-    environment: Option<String>,
+    pub environment: Option<String>,
 }
+
+impl_from_args!(StopArgs, canister: args::Canister);
+impl_from_args!(StopArgs, network: Option<args::Network>);
+impl_from_args!(StopArgs, environment: Option<String>);
+impl_from_args!(StopArgs, network: Option<args::Network>, environment: Option<String>);
 
 impl Validate for StopArgs {
     fn validate(&self, mode: &Mode) -> Result<(), ValidateError> {
-        match (&mode, self) {
-            (
-                Mode::Project(_),
-                StopArgs {
-                    network: Some(_),
-                    environment: Some(_),
-                    ..
-                },
-            ) => Err(anyhow!("not allowed to have both network and environment").into()),
-
-            (
-                Mode::Global,
-                StopArgs {
-                    environment: Some(_),
-                    ..
-                },
-            ) => Err(anyhow!("environments are not available in a global context").into()),
-
-            (
-                Mode::Global,
-                StopArgs {
-                    network: Some(args::Network::Name(_)),
-                    ..
-                },
-            ) => Err(anyhow!("please provide a network url").into()),
-
-            _ => Ok(()),
+        // Custom Tests
+        for test in [
+            //
+            // first custom check
+            |_args, _m| Some("zob".to_string()),
+            //
+            // second custom check
+            |_args, _m| Some("butts".to_string()),
+        ] {
+            test(self, mode)
+                .map(|msg| anyhow::format_err!(msg))
+                .map_or(Ok(()), Err)?;
         }
+
+        // General Tests
+        for test in [
+            validations::a_canister_id_is_required_in_global_mode,
+            validations::a_network_name_is_required_in_project_mode,
+            validations::a_network_url_is_required_in_global_mode,
+            validations::environments_are_not_available_in_a_global_mode,
+            validations::network_or_environment_not_both,
+        ] {
+            test(self, mode)
+                .map(|msg| anyhow::format_err!(msg))
+                .map_or(Ok(()), Err)?;
+        }
+
+        Ok(())
     }
 }
 

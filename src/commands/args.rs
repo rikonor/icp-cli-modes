@@ -51,7 +51,23 @@ pub trait Validate {
 pub mod validations {
     use indoc::formatdoc;
 
-    use crate::commands::{Mode, args::Network};
+    use crate::commands::{
+        Mode,
+        args::{Canister, Network},
+    };
+
+    pub fn a_canister_id_is_required_in_global_mode<'a>(
+        canister: impl Into<(&'a Canister,)>,
+        m: &Mode,
+    ) -> Option<String> {
+        let (canister,) = canister.into();
+
+        (matches!(m, Mode::Global) && matches!(canister, Canister::Principal(_))).then_some(
+            formatdoc! {"
+                Please provide a canister principal in global mode.
+        "},
+        )
+    }
 
     pub fn network_or_environment_not_both<'a>(
         network_environment: impl Into<(&'a Option<Network>, &'a Option<String>)>,
@@ -60,8 +76,8 @@ pub mod validations {
         let (network, environment) = network_environment.into();
 
         (matches!(m, _) && network.is_some() && environment.is_some()).then_some(formatdoc! {"
-        Please provide either a network or an environment, but not both.
-    "})
+            Please provide either a network or an environment, but not both.
+        "})
     }
 
     pub fn environments_are_not_available_in_a_global_mode<'a>(
@@ -71,8 +87,8 @@ pub mod validations {
         let (environment,) = environment.into();
 
         (matches!(m, Mode::Global) && environment.is_some()).then_some(formatdoc! {"
-        Environments are not available in global mode.
-    "})
+            Environments are not available in global mode.
+        "})
     }
 
     pub fn a_network_url_is_required_in_global_mode<'a>(

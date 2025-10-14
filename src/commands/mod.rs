@@ -6,6 +6,7 @@ use crate::operations::Initializers;
 
 pub mod args;
 pub mod canister;
+pub mod macros;
 pub mod token;
 
 #[derive(Subcommand)]

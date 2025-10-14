@@ -3,41 +3,31 @@ use candid::Principal;
 use clap::Args;
 use ic_agent::Agent;
 
-use crate::commands::{
-    Context, Mode,
-    args::{self, Network, Validate, ValidateError, validations},
+use crate::{
+    commands::{
+        Context, Mode,
+        args::{self, Validate, ValidateError, validations},
+    },
+    impl_from_args,
 };
 
 #[derive(Args, Clone)]
 pub struct StartArgs {
-    canister: args::Canister,
+    pub canister: args::Canister,
 
     // Network
     #[arg(long)]
-    network: Option<args::Network>,
+    pub network: Option<args::Network>,
 
     // Environment
     #[arg(long)]
-    environment: Option<String>,
+    pub environment: Option<String>,
 }
 
-impl<'a> From<&'a StartArgs> for (&'a Option<Network>, &'a Option<String>) {
-    fn from(args: &'a StartArgs) -> Self {
-        (&args.network, &args.environment)
-    }
-}
-
-impl<'a> From<&'a StartArgs> for (&'a Option<Network>,) {
-    fn from(args: &'a StartArgs) -> Self {
-        (&args.network,)
-    }
-}
-
-impl<'a> From<&'a StartArgs> for (&'a Option<String>,) {
-    fn from(args: &'a StartArgs) -> Self {
-        (&args.environment,)
-    }
-}
+impl_from_args!(StartArgs, canister: args::Canister);
+impl_from_args!(StartArgs, network: Option<args::Network>);
+impl_from_args!(StartArgs, environment: Option<String>);
+impl_from_args!(StartArgs, network: Option<args::Network>, environment: Option<String>);
 
 impl Validate for StartArgs {
     fn validate(&self, mode: &Mode) -> Result<(), ValidateError> {
@@ -45,7 +35,7 @@ impl Validate for StartArgs {
         for test in [
             //
             // first custom check
-            |_args, _m| Some("butts".to_string()),
+            |_args, _m| Some("zob".to_string()),
             //
             // second custom check
             |_args, _m| Some("butts".to_string()),
@@ -57,6 +47,7 @@ impl Validate for StartArgs {
 
         // General Tests
         for test in [
+            validations::a_canister_id_is_required_in_global_mode,
             validations::a_network_name_is_required_in_project_mode,
             validations::a_network_url_is_required_in_global_mode,
             validations::environments_are_not_available_in_a_global_mode,
