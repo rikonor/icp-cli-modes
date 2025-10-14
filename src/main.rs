@@ -4,7 +4,7 @@ use anyhow::Error;
 use clap::Parser;
 
 use crate::{
-    commands::{Command, Context, Mode, canister, token},
+    commands::{Command, Context, Mode, build, canister, token},
     operations::{
         canister::{Starter, Stopper},
         token::Transmitter,
@@ -49,6 +49,8 @@ async fn main() -> Result<(), Error> {
     let ctx = Context { mode, ops };
 
     match cli.command {
+        Command::Build(args) => build::build(&ctx, &args).await?,
+
         Command::Canister(cmd) => match cmd.command {
             canister::Commands::Start(args) => canister::start(&ctx, &args).await?,
             canister::Commands::Stop(args) => canister::stop(&ctx, &args).await?,

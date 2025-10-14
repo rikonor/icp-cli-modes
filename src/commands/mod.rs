@@ -5,12 +5,16 @@ use clap::Subcommand;
 use crate::operations::Initializers;
 
 pub mod args;
+pub mod build;
 pub mod canister;
 pub mod macros;
 pub mod token;
 
 #[derive(Subcommand)]
 pub enum Command {
+    // Build
+    Build(build::Arguments),
+
     // Canister
     Canister(canister::Command),
 
