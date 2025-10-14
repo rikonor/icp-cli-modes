@@ -2,11 +2,10 @@ use anyhow::Error;
 use candid::Principal;
 use clap::Args;
 use ic_agent::Agent;
-use indoc::formatdoc;
 
 use crate::commands::{
     Context, Mode,
-    args::{self, Network, Validate, ValidateError},
+    args::{self, Network, Validate, ValidateError, validations},
 };
 
 #[derive(Args, Clone)]
@@ -40,68 +39,8 @@ impl<'a> From<&'a StartArgs> for (&'a Option<String>,) {
     }
 }
 
-fn network_or_environment_not_both<'a>(
-    network_environment: impl Into<(&'a Option<Network>, &'a Option<String>)>,
-    m: &Mode,
-) -> Option<String> {
-    let (network, environment) = network_environment.into();
-
-    (matches!(m, _) && network.is_some() && environment.is_some()).then_some(formatdoc! {"
-        Please provide either a network or an environment, but not both.
-    "})
-}
-
-fn environments_are_not_available_in_a_global_mode<'a>(
-    environment: impl Into<(&'a Option<String>,)>,
-    m: &Mode,
-) -> Option<String> {
-    let (environment,) = environment.into();
-
-    (matches!(m, Mode::Global) && environment.is_some()).then_some(formatdoc! {"
-        Environments are not available in global mode.
-    "})
-}
-
-fn a_network_url_is_required_in_global_mode<'a>(
-    network: impl Into<(&'a Option<Network>,)>,
-    m: &Mode,
-) -> Option<String> {
-    let (network,) = network.into();
-
-    (matches!(m, Mode::Global) && !matches!(network, Some(Network::Url(_)))).then_some(
-        formatdoc! {"
-            A network `url` is required in global mode.
-        "},
-    )
-}
-
-fn a_network_name_is_required_in_project_mode<'a>(
-    network: impl Into<(&'a Option<Network>,)>,
-    m: &Mode,
-) -> Option<String> {
-    let (network,) = network.into();
-
-    (matches!(m, Mode::Project(_)) && !matches!(network, Some(Network::Name(_)))).then_some(
-        formatdoc! {"
-            A network `name` is required in project mode.
-        "},
-    )
-}
-
 impl Validate for StartArgs {
     fn validate(&self, mode: &Mode) -> Result<(), ValidateError> {
-        // General Tests
-        for test in [
-            a_network_name_is_required_in_project_mode,
-            a_network_url_is_required_in_global_mode,
-            environments_are_not_available_in_a_global_mode,
-            network_or_environment_not_both,
-        ] {
-            test(self, mode)
-                .map(|msg| anyhow::format_err!(msg))
-                .map_or(Ok(()), Err)?;
-        }
-
         // Custom Tests
         for test in [
             //
@@ -110,6 +49,18 @@ impl Validate for StartArgs {
             //
             // second custom check
             |_args, _m| Some("butts".to_string()),
+        ] {
+            test(self, mode)
+                .map(|msg| anyhow::format_err!(msg))
+                .map_or(Ok(()), Err)?;
+        }
+
+        // General Tests
+        for test in [
+            validations::a_network_name_is_required_in_project_mode,
+            validations::a_network_url_is_required_in_global_mode,
+            validations::environments_are_not_available_in_a_global_mode,
+            validations::network_or_environment_not_both,
         ] {
             test(self, mode)
                 .map(|msg| anyhow::format_err!(msg))
