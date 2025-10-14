@@ -1,5 +1,3 @@
-use indoc::formatdoc;
-
 use crate::commands::{
     Mode,
     args::{Canister, Network},
@@ -123,9 +121,13 @@ mod test_a_canister_id_is_required_in_global_mode {
     #[test]
     fn test() {
         let out = a_canister_id_is_required_in_global_mode(
+            //
+            // Args
             &Args {
                 canister: Canister::Name("my-canister".to_string()),
             },
+            //
+            // Mode
             &Mode::Global,
         );
         match out {
@@ -137,7 +139,10 @@ mod test_a_canister_id_is_required_in_global_mode {
 
 #[cfg(test)]
 mod test_network_or_environment_not_both {
-    use crate::{commands::args, impl_from_args};
+    use crate::{
+        commands::args::{self, validations},
+        impl_from_args,
+    };
 
     use super::*;
 
@@ -152,21 +157,29 @@ mod test_network_or_environment_not_both {
     fn test() {
         for (args, modes) in [
             (
+                //
+                // Args
                 &Args {
                     network: Some(args::Network::Name("my-network".to_string())),
                     environment: Some("my-environment".to_string()),
                 },
-                [&Mode::Global, &Mode::Project("dir".into())],
+                //
+                // Modes
+                validations::helpers::all_modes(),
             ),
             (
+                //
+                // Args
                 &Args {
                     network: Some(args::Network::Url("http://www.example.com".to_string())),
                     environment: Some("my-environment".to_string()),
                 },
-                [&Mode::Global, &Mode::Project("dir".into())],
+                //
+                // Modes
+                validations::helpers::all_modes(),
             ),
         ] {
-            for mode in modes {
+            for mode in &modes {
                 let out = network_or_environment_not_both(args, mode);
                 match out {
                     Some(msg)
@@ -194,9 +207,13 @@ mod test_environments_are_not_available_in_a_global_mode {
     #[test]
     fn test() {
         let out = environments_are_not_available_in_a_global_mode(
+            //
+            // Args
             &Args {
                 environment: Some("my-environment".to_string()),
             },
+            //
+            // Mode
             &Mode::Global,
         );
         match out {
@@ -221,9 +238,13 @@ mod test_a_network_url_is_required_in_global_mode {
     #[test]
     fn test() {
         let out = a_network_url_is_required_in_global_mode(
+            //
+            // Args
             &Args {
                 network: Some(args::Network::Name("my-network".to_string())),
             },
+            //
+            // Mode
             &Mode::Global,
         );
         match out {
@@ -248,9 +269,13 @@ mod test_a_network_name_is_required_in_project_mode {
     #[test]
     fn test() {
         let out = a_network_name_is_required_in_project_mode(
+            //
+            // Args
             &Args {
                 network: Some(args::Network::Url("http://www.example.com".to_string())),
             },
+            //
+            // Mode
             &Mode::Project("dir".into()),
         );
         match out {

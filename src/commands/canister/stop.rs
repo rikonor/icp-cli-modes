@@ -61,17 +61,17 @@ impl Validate for StopArgs {
 }
 
 pub async fn stop(ctx: &Context, args: &StopArgs) -> Result<(), Error> {
-    let cid = match &ctx.mode {
-        //
-        Mode::Project(dir) => {
-            todo!()
-        }
+    // let cid = match &ctx.mode {
+    //     //
+    //     Mode::Project(dir) => {
+    //         todo!()
+    //     }
 
-        //
-        Mode::Global => {
-            todo!()
-        }
-    };
+    //     //
+    //     Mode::Global => {
+    //         todo!()
+    //     }
+    // };
 
     let cid = Principal::anonymous();
 
