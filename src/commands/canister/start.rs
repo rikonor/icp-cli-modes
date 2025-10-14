@@ -35,10 +35,10 @@ impl Validate for StartArgs {
         for test in [
             //
             // first custom check
-            |_args, _m| None::<String>,
+            |_args, _m| None::<&'static str>,
             //
             // second custom check
-            |_args, _m| None::<String>,
+            |_args, _m| None::<&'static str>,
         ] {
             test(self, mode)
                 .map(|msg| anyhow::format_err!(msg))
