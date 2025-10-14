@@ -33,10 +33,10 @@ impl Validate for StopArgs {
         for test in [
             //
             // first custom check
-            |_args, _m| Some("zob".to_string()),
+            |_args, _m| None::<String>,
             //
             // second custom check
-            |_args, _m| Some("butts".to_string()),
+            |_args, _m| None::<String>,
         ] {
             test(self, mode)
                 .map(|msg| anyhow::format_err!(msg))
