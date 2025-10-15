@@ -4,11 +4,11 @@ use clap::Args;
 use crate::commands::Context;
 
 #[derive(Args)]
-pub struct Arguments {
+pub struct BuildArgs {
     name: Option<String>,
 }
 
-pub async fn build(ctx: &Context, args: &Arguments) -> Result<(), Error> {
+pub async fn build(ctx: &Context, args: &BuildArgs) -> Result<(), Error> {
     // let cid = match &ctx.mode {
     //     //
     //     Mode::Project(dir) => {

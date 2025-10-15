@@ -1,14 +1,13 @@
-use anyhow::Error;
 use candid::Principal;
 use clap::Args;
-use ic_agent::Agent;
+use ic_agent::{Agent, AgentError};
 
 use crate::{
     commands::{
         Context, Mode,
         args::{self, Validate, ValidateError, validations},
     },
-    impl_from_args,
+    impl_from_args, operations,
 };
 
 #[derive(Args)]
@@ -60,7 +59,19 @@ impl Validate for StopArgs {
     }
 }
 
-pub async fn stop(ctx: &Context, args: &StopArgs) -> Result<(), Error> {
+#[derive(Debug, thiserror::Error)]
+pub enum CommandError {
+    #[error("failed to stop canister")]
+    Start(#[from] operations::canister::StopError),
+
+    #[error(transparent)]
+    Agent(#[from] AgentError),
+
+    #[error(transparent)]
+    Unexpected(#[from] anyhow::Error),
+}
+
+pub async fn stop(ctx: &Context, args: &StopArgs) -> Result<(), CommandError> {
     // let cid = match &ctx.mode {
     //     //
     //     Mode::Project(dir) => {

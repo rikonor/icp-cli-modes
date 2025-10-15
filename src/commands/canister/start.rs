@@ -1,14 +1,13 @@
-use anyhow::Error;
 use candid::Principal;
 use clap::Args;
-use ic_agent::Agent;
+use ic_agent::{Agent, AgentError};
 
 use crate::{
     commands::{
         Context, Mode,
         args::{self, Validate, ValidateError, validations},
     },
-    impl_from_args,
+    impl_from_args, operations,
 };
 
 #[derive(Args, Clone)]
@@ -62,7 +61,19 @@ impl Validate for StartArgs {
     }
 }
 
-pub async fn start(ctx: &Context, args: &StartArgs) -> Result<(), Error> {
+#[derive(Debug, thiserror::Error)]
+pub enum CommandError {
+    #[error("failed to start canister")]
+    Start(#[from] operations::canister::StartError),
+
+    #[error(transparent)]
+    Agent(#[from] AgentError),
+
+    #[error(transparent)]
+    Unexpected(#[from] anyhow::Error),
+}
+
+pub async fn start(ctx: &Context, args: &StartArgs) -> Result<(), CommandError> {
     // let cid = match &ctx.mode {
     //     //
     //     Mode::Project(dir) => {

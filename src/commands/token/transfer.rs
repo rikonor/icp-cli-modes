@@ -1,14 +1,13 @@
-use anyhow::{Error, anyhow};
 use candid::Principal;
 use clap::Args;
-use ic_agent::Agent;
+use ic_agent::{Agent, AgentError};
 
 use crate::{
     commands::{
         Context, Mode,
         args::{self, Validate, ValidateError, validations},
     },
-    impl_from_args,
+    impl_from_args, operations,
 };
 
 #[derive(Args)]
@@ -56,7 +55,19 @@ impl Validate for TransferArgs {
     }
 }
 
-pub async fn transfer(ctx: &Context, args: &TransferArgs) -> Result<(), Error> {
+#[derive(Debug, thiserror::Error)]
+pub enum CommandError {
+    #[error("failed to make transfer")]
+    Transfer(#[from] operations::token::TransferError),
+
+    #[error(transparent)]
+    Agent(#[from] AgentError),
+
+    #[error(transparent)]
+    Unexpected(#[from] anyhow::Error),
+}
+
+pub async fn transfer(ctx: &Context, args: &TransferArgs) -> Result<(), CommandError> {
     let (from, to) = match &ctx.mode {
         //
         Mode::Project(dir) => {

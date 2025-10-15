@@ -13,7 +13,7 @@ pub mod token;
 #[derive(Subcommand)]
 pub enum Command {
     // Build
-    Build(build::Arguments),
+    Build(build::BuildArgs),
 
     // Canister
     Canister(canister::Command),
